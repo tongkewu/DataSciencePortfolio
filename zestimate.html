@@ -1037,21 +1037,95 @@ h6:hover .anchor-link {
 
 .ansi-bold { font-weight: bold; }
 </style>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h1 id="Predict-Zestimate-By-Advanced-Regression-Methods">Predict Zestimate By Advanced Regression Methods<a class="anchor-link" href="#Predict-Zestimate-By-Advanced-Regression-Methods">¶</a></h1><p>A STA208 Course Project by Rachel Wu and Wenqian Li</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Introduction">Introduction<a class="anchor-link" href="#Introduction">¶</a></h2><p>The Zestimate home value is Zillow's estimated market value for an individual home and is calculated for about 100 million homes nationwide. Buying or selling a home is usually the largest transaction in one's lifetime, so it is critical for Zillow to give consumers a trusted estimate. This will not only increase the popularities of Zillow among consumers but also keep Zillow away from lawsuit for undervaluing their house <a href="https://www.washingtonpost.com/realestate/zillow-faces-lawsuit-over-zestimate-tool-that-calculates-a-houses-worth/2017/05/09/b22d0318-3410-11e7-b4ee-434b6d506b37_story.html?utm_term=.4870d57f4a6a">Zillow faces lawsuit over Zestimate tool</a>.</p>
+<p>In this project, we will use the dataset released by a featured prediction kaggle <a href="https://www.kaggle.com/c/zillow-prize-1">compitition</a>. Different with common real estate project, this dataset does not reveal the exact saleprice. Instead, it uses \textit{logerror} as response variable, where $$logerror = log(Zestimate) - log(SalePrice)$$</p>
+<p>The dataset provides 57 features, in which 52 are numerical features and 5 are object features. Out of the numerical features, a number of them actually should belong to object/categorical features, such as airconditioningtypeid, architecturalstyletypeid, and etc. In these features, different types do not convey ordered information.</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>2985217 of property information is provided, but only 90811 of them have been sold in 2016 and have logerror information. With these 90811 samples, 80% data points are used as training data and the rest 20% samples are used as testing data. We plan to fit different regression models and find a model that gives the minimum MSE for testing data.</p>
+<p>One challenge of this dataset is that, there are lots of missing values in many variables. We adopted several methods to solve this issue. First, if the missing values in one categorical variable clearly indicate one category, replace it with the guessed category. If not clear, replace it with Unknown. Second, if the missing values in one numerical variable clearly indicate 0, replace it with 0. If not clear, then replace it with -1 and add a new categorical feature indicating whether the former variable is known or unknown with 1 or 0. Third, if a small proportional of values are missing, replace them with the mean.</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Feature-engineering:-cluster-for-geographical-features">Feature engineering: cluster for geographical features<a class="anchor-link" href="#Feature-engineering:-cluster-for-geographical-features">¶</a></h3><p>Another challenge of this dataset is that, there are quite a number of geographical features that are not easy to deal with. For categorical ones, there may be thousands of possible categories for one feature, making is impossible to get dummy variables or run random forest algorithm directly. For numerical ones, the numbers are not really carrying ordered information, such as zipcode, latitude and longitude.</p>
+<p>To solve this puzzle, we selected several geographical features from dataset, including FIPS, Latitude, Longitude, Raw_census, City, County, Neighbourhood, and Zipcode. We first vectorized these features and performed Kmeans clustering to get 8 clusters for geographical information. Then we dropped the original geographical features and merged the geographical clusters in the training dataset. Overall, we get a trimmed dataset with 100 features after getting dummy variables for the categorical features.</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Methods">Methods<a class="anchor-link" href="#Methods">¶</a></h2><p>For each method, we first tune the parameters to minimize MSE, then fit models with selected parameters.</p>
+<ol>
+<li><p>Linear Regression</p>
+</li>
+<li><p>Ridge Regression</p>
+</li>
+<li><p>Lasso Regression</p>
+</li>
+<li><p>Linear SVM Regression</p>
+</li>
+<li><p>Random Forest Regression</p>
+</li>
+<li><p>Adaboost Regression</p>
+</li>
+<li><p>Xgboost Regression</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Model-Building">Model Building<a class="anchor-link" href="#Model-Building">¶</a></h2><p>After the data processing, we begin compare performance of different regression models.</p>
+</div>
+</div>
+</div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
 <div class="prompt input_prompt">In [1]:</div>
 <div class="inner_cell">
 <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
-<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">Counter</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
-<span class="kn">from</span> <span class="nn">sklearn.ensemble</span> <span class="kn">import</span> <span class="n">RandomForestRegressor</span> <span class="k">as</span> <span class="n">RFR</span>
-<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">StratifiedKFold</span><span class="p">,</span> <span class="n">GridSearchCV</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">Counter</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="k">import</span> <span class="n">datetime</span>
+<span class="kn">from</span> <span class="nn">sklearn.ensemble</span> <span class="k">import</span> <span class="n">RandomForestRegressor</span> <span class="k">as</span> <span class="n">RFR</span>
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="k">import</span> <span class="n">StratifiedKFold</span><span class="p">,</span> <span class="n">GridSearchCV</span>
 <span class="kn">import</span> <span class="nn">time</span>
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
-<span class="kn">import</span> <span class="nn">seaborn</span> <span class="kn">as</span> <span class="nn">sns</span>
-<span class="n">sns</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">color_codes</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">color_codes</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="o">%</span><span class="k">matplotlib</span> inline
 </pre></div>
 </div>
@@ -1063,7 +1137,7 @@ h6:hover .anchor-link {
 <div class="prompt input_prompt">In [2]:</div>
 <div class="inner_cell">
 <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="n">train</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">"train_V2.csv"</span><span class="p">)</span> <span class="c1">#train_V2 is the dataset in which the missing values are removed.</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">train</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">"train_V2.csv"</span><span class="p">)</span> <span class="c1">#train_V2 is the dataset in which the missing values are removed.</span>
 <span class="n">train</span> <span class="o">=</span> <span class="n">train</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="s2">"Unnamed: 0"</span><span class="p">,</span> <span class="s2">"Tax_assess_Year"</span><span class="p">],</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="c1">#Tax_assess_Year is all 2015. No sense to keep it.</span>
 
 <span class="c1">#Somehow a few variables change back to numeric after reading csv using pandas. </span>
@@ -1077,7 +1151,7 @@ h6:hover .anchor-link {
 <span class="n">train</span> <span class="o">=</span> <span class="n">train</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s2">"tran_date"</span><span class="p">,</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
 
 <span class="c1">#set index</span>
-<span class="n">train</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s2">"Parcel_ID"</span><span class="p">,</span> <span class="n">drop</span> <span class="o">=</span> <span class="bp">True</span><span class="p">,</span> <span class="n">inplace</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)</span>
+<span class="n">train</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s2">"Parcel_ID"</span><span class="p">,</span> <span class="n">drop</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">inplace</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
 
 <span class="c1">#train.to_csv("train_V3.csv")</span>
 </pre></div>
@@ -1090,7 +1164,7 @@ h6:hover .anchor-link {
 <div class="prompt input_prompt">In [3]:</div>
 <div class="inner_cell">
 <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="n">train</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">train</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
@@ -1296,9 +1370,9 @@ h6:hover .anchor-link {
 <div class="prompt input_prompt">In [4]:</div>
 <div class="inner_cell">
 <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="n">geo</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">"train_geo.csv"</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">geo</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">"train_geo.csv"</span><span class="p">)</span>
 
-<span class="n">geo</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s2">"Parcel_ID"</span><span class="p">,</span> <span class="n">drop</span> <span class="o">=</span> <span class="bp">True</span><span class="p">,</span> <span class="n">inplace</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)</span>
+<span class="n">geo</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s2">"Parcel_ID"</span><span class="p">,</span> <span class="n">drop</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">inplace</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
 
 <span class="n">geo</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
 </pre></div>
@@ -1412,7 +1486,7 @@ h6:hover .anchor-link {
 <div class="prompt input_prompt">In [5]:</div>
 <div class="inner_cell">
 <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="c1">#delete the geographical info from train</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1">#delete the geographical info from train</span>
 <span class="n">train</span> <span class="o">=</span> <span class="n">train</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="s2">"FIPS"</span><span class="p">,</span><span class="s2">"Latitude"</span><span class="p">,</span><span class="s2">"Longitude"</span><span class="p">,</span><span class="s2">"Raw_census"</span><span class="p">,</span><span class="s2">"City"</span><span class="p">,</span><span class="s2">"County"</span><span class="p">,</span><span class="s2">"Neighborhood"</span><span class="p">,</span><span class="s2">"Zipcode"</span><span class="p">,</span><span class="s2">"Census"</span><span class="p">,</span> <span class="s2">"Zone_desc"</span><span class="p">,</span><span class="s2">"Land_Code"</span><span class="p">],</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -1424,8 +1498,8 @@ h6:hover .anchor-link {
 <div class="prompt input_prompt">In [6]:</div>
 <div class="inner_cell">
 <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="c1">#merge train and geographical cluster together.</span>
-<span class="n">train</span> <span class="o">=</span> <span class="n">train</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">geo</span><span class="p">[</span><span class="s2">"cluster"</span><span class="p">]),</span> <span class="n">left_index</span> <span class="o">=</span> <span class="bp">True</span><span class="p">,</span> <span class="n">right_index</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1">#merge train and geographical cluster together.</span>
+<span class="n">train</span> <span class="o">=</span> <span class="n">train</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">geo</span><span class="p">[</span><span class="s2">"cluster"</span><span class="p">]),</span> <span class="n">left_index</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">right_index</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -1436,7 +1510,7 @@ h6:hover .anchor-link {
 <div class="prompt input_prompt">In [7]:</div>
 <div class="inner_cell">
 <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="n">toobject</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"Land_Type"</span><span class="p">,</span><span class="s2">"cluster"</span><span class="p">]</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">toobject</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"Land_Type"</span><span class="p">,</span><span class="s2">"cluster"</span><span class="p">]</span>
 <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">toobject</span><span class="p">:</span>
     <span class="n">train</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">train</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">"object"</span><span class="p">)</span>
 </pre></div>
@@ -1449,7 +1523,7 @@ h6:hover .anchor-link {
 <div class="prompt input_prompt">In [62]:</div>
 <div class="inner_cell">
 <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="c1">#train.to_csv("traingeo_merge.csv")</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1">#train.to_csv("traingeo_merge.csv")</span>
 </pre></div>
 </div>
 </div>
@@ -1460,7 +1534,7 @@ h6:hover .anchor-link {
 <div class="prompt input_prompt">In [ ]:</div>
 <div class="inner_cell">
 <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="c1">#train = pd.read_csv("traingeo_merge.csv")</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1">#train = pd.read_csv("traingeo_merge.csv")</span>
 </pre></div>
 </div>
 </div>
@@ -1480,7 +1554,7 @@ h6:hover .anchor-link {
 <div class="prompt input_prompt">In [8]:</div>
 <div class="inner_cell">
 <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="n">y</span> <span class="o">=</span> <span class="n">train</span><span class="o">.</span><span class="n">logerror</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">y</span> <span class="o">=</span> <span class="n">train</span><span class="o">.</span><span class="n">logerror</span>
 </pre></div>
 </div>
 </div>
@@ -1491,8 +1565,8 @@ h6:hover .anchor-link {
 <div class="prompt input_prompt">In [9]:</div>
 <div class="inner_cell">
 <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
-<span class="n">ax</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">distplot</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">kde</span> <span class="o">=</span> <span class="bp">False</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+<span class="n">ax</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">distplot</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">kde</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">"The histogram of logerror"</span><span class="p">,</span><span class="n">fontsize</span> <span class="o">=</span> <span class="mi">20</span><span class="p">)</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">"Frequency"</span><span class="p">,</span><span class="n">fontsize</span> <span class="o">=</span> <span class="mi">20</span><span class="p">)</span>
 </pre></div>
@@ -1713,8 +1787,8 @@ JElS7f8DLPDN5ixYzzQAAAAASUVORK5CYII=
 <div class="prompt input_prompt">In [10]:</div>
 <div class="inner_cell">
 <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
-<span class="n">ax</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">distplot</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">kde</span> <span class="o">=</span> <span class="bp">False</span><span class="p">,</span> <span class="n">bins</span> <span class="o">=</span> <span class="mi">200</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+<span class="n">ax</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">distplot</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">kde</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">bins</span> <span class="o">=</span> <span class="mi">200</span><span class="p">)</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">xlim</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">))</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">"The histogram of logerror"</span><span class="p">,</span><span class="n">fontsize</span> <span class="o">=</span> <span class="mi">20</span><span class="p">)</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">"Frequency"</span><span class="p">,</span><span class="n">fontsize</span> <span class="o">=</span> <span class="mi">20</span><span class="p">)</span>
@@ -1960,10 +2034,10 @@ LaEOH/kAAAAASUVORK5CYII=
 <div class="prompt input_prompt">In [12]:</div>
 <div class="inner_cell">
 <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="c1">#correlation matrix</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1">#correlation matrix</span>
 <span class="n">corrmat</span> <span class="o">=</span> <span class="n">train</span><span class="o">.</span><span class="n">corr</span><span class="p">()</span>
 <span class="n">f</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">12</span><span class="p">))</span>
-<span class="n">sns</span><span class="o">.</span><span class="n">heatmap</span><span class="p">(</span><span class="n">corrmat</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=.</span><span class="mi">8</span><span class="p">,</span> <span class="n">square</span><span class="o">=</span><span class="bp">True</span><span class="p">);</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">heatmap</span><span class="p">(</span><span class="n">corrmat</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=.</span><span class="mi">8</span><span class="p">,</span> <span class="n">square</span><span class="o">=</span><span class="kc">True</span><span class="p">);</span>
 </pre></div>
 </div>
 </div>
@@ -3204,12 +3278,12 @@ BjXPzUa6KaWUUkpprDI4JKWUUkoppZQmSNbXpJRSSimllNIEyUlaSimllFJKKU2QnKSllFJKKaWU
 <div class="prompt input_prompt">In [13]:</div>
 <div class="inner_cell">
 <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="c1">#saleprice correlation matrix</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1">#saleprice correlation matrix</span>
 <span class="n">k</span> <span class="o">=</span> <span class="mi">10</span> <span class="c1">#number of variables for heatmap</span>
 <span class="n">cols</span> <span class="o">=</span> <span class="n">corrmat</span><span class="o">.</span><span class="n">nlargest</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="s1">'logerror'</span><span class="p">)[</span><span class="s1">'logerror'</span><span class="p">]</span><span class="o">.</span><span class="n">index</span>
 <span class="n">cm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">corrcoef</span><span class="p">(</span><span class="n">train</span><span class="p">[</span><span class="n">cols</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
 <span class="n">sns</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">font_scale</span><span class="o">=</span><span class="mf">1.25</span><span class="p">)</span>
-<span class="n">hm</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">heatmap</span><span class="p">(</span><span class="n">cm</span><span class="p">,</span> <span class="n">cbar</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">annot</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">annot_kws</span><span class="o">=</span><span class="p">{</span><span class="s1">'size'</span><span class="p">:</span> <span class="mi">9</span><span class="p">},</span><span class="n">square</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s1">'.2f'</span><span class="p">,</span> 
+<span class="n">hm</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">heatmap</span><span class="p">(</span><span class="n">cm</span><span class="p">,</span> <span class="n">cbar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">annot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">annot_kws</span><span class="o">=</span><span class="p">{</span><span class="s1">'size'</span><span class="p">:</span> <span class="mi">9</span><span class="p">},</span><span class="n">square</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s1">'.2f'</span><span class="p">,</span> 
                  <span class="n">yticklabels</span><span class="o">=</span><span class="n">cols</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">xticklabels</span><span class="o">=</span><span class="n">cols</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -4314,26 +4388,26 @@ KIrqhv4fD3kst+0wYGwAAAAASUVORK5CYII=
 <div class="prompt input_prompt">In [10]:</div>
 <div class="inner_cell">
 <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
-<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">Counter</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
-<span class="kn">from</span> <span class="nn">sklearn.ensemble</span> <span class="kn">import</span> <span class="n">RandomForestRegressor</span> <span class="k">as</span> <span class="n">RFR</span>
-<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">StratifiedKFold</span><span class="p">,</span> <span class="n">GridSearchCV</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">Counter</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="k">import</span> <span class="n">datetime</span>
+<span class="kn">from</span> <span class="nn">sklearn.ensemble</span> <span class="k">import</span> <span class="n">RandomForestRegressor</span> <span class="k">as</span> <span class="n">RFR</span>
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="k">import</span> <span class="n">StratifiedKFold</span><span class="p">,</span> <span class="n">GridSearchCV</span>
 <span class="kn">import</span> <span class="nn">time</span>
-<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">train_test_split</span><span class="p">,</span> <span class="n">KFold</span>
-<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">StratifiedKFold</span><span class="p">,</span> <span class="n">GridSearchCV</span>
-<span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">roc_curve</span><span class="p">,</span> <span class="n">precision_recall_curve</span>
-<span class="kn">from</span> <span class="nn">sklearn.ensemble</span> <span class="kn">import</span> <span class="n">AdaBoostRegressor</span> <span class="k">as</span> <span class="n">Adr</span>
-<span class="kn">from</span> <span class="nn">sklearn.svm</span> <span class="kn">import</span> <span class="n">SVC</span>
-<span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">OneHotEncoder</span> 
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="k">import</span> <span class="n">train_test_split</span><span class="p">,</span> <span class="n">KFold</span>
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="k">import</span> <span class="n">StratifiedKFold</span><span class="p">,</span> <span class="n">GridSearchCV</span>
+<span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="k">import</span> <span class="n">roc_curve</span><span class="p">,</span> <span class="n">precision_recall_curve</span>
+<span class="kn">from</span> <span class="nn">sklearn.ensemble</span> <span class="k">import</span> <span class="n">AdaBoostRegressor</span> <span class="k">as</span> <span class="n">Adr</span>
+<span class="kn">from</span> <span class="nn">sklearn.svm</span> <span class="k">import</span> <span class="n">SVC</span>
+<span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="k">import</span> <span class="n">OneHotEncoder</span> 
 
-<span class="kn">from</span> <span class="nn">sklearn.linear_model</span> <span class="kn">import</span> <span class="n">Ridge</span>
-<span class="kn">from</span> <span class="nn">sklearn.linear_model</span> <span class="kn">import</span> <span class="n">LinearRegression</span><span class="p">,</span> <span class="n">Ridge</span><span class="p">,</span> <span class="n">RidgeCV</span><span class="p">,</span> <span class="n">Lasso</span><span class="p">,</span> <span class="n">LassoCV</span><span class="p">,</span> <span class="n">lars_path</span>
-<span class="kn">from</span> <span class="nn">sklearn.svm</span> <span class="kn">import</span> <span class="n">LinearSVR</span><span class="p">,</span> <span class="n">SVR</span>
-<span class="kn">import</span> <span class="nn">xgboost</span> <span class="kn">as</span> <span class="nn">xgb</span>
-<span class="kn">import</span> <span class="nn">seaborn</span> <span class="kn">as</span> <span class="nn">sns</span>
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">sklearn.linear_model</span> <span class="k">import</span> <span class="n">Ridge</span>
+<span class="kn">from</span> <span class="nn">sklearn.linear_model</span> <span class="k">import</span> <span class="n">LinearRegression</span><span class="p">,</span> <span class="n">Ridge</span><span class="p">,</span> <span class="n">RidgeCV</span><span class="p">,</span> <span class="n">Lasso</span><span class="p">,</span> <span class="n">LassoCV</span><span class="p">,</span> <span class="n">lars_path</span>
+<span class="kn">from</span> <span class="nn">sklearn.svm</span> <span class="k">import</span> <span class="n">LinearSVR</span><span class="p">,</span> <span class="n">SVR</span>
+<span class="kn">import</span> <span class="nn">xgboost</span> <span class="k">as</span> <span class="nn">xgb</span>
+<span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 </pre></div>
 </div>
 </div>
@@ -4344,7 +4418,7 @@ KIrqhv4fD3kst+0wYGwAAAAASUVORK5CYII=
 <div class="prompt input_prompt">In [11]:</div>
 <div class="inner_cell">
 <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="n">train</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">"traingeo_merge.csv"</span><span class="p">,</span> <span class="n">index_col</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">train</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">"traingeo_merge.csv"</span><span class="p">,</span> <span class="n">index_col</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
 
 <span class="n">toobject</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"Land_Type"</span><span class="p">,</span><span class="s2">"cluster"</span><span class="p">]</span>
 <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">toobject</span><span class="p">:</span>
@@ -4376,7 +4450,7 @@ KIrqhv4fD3kst+0wYGwAAAAASUVORK5CYII=
 <div class="prompt input_prompt">In [21]:</div>
 <div class="inner_cell">
 <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="n">Lin_regr</span> <span class="o">=</span> <span class="n">LinearRegression</span><span class="p">(</span><span class="n">normalize</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">Lin_regr</span> <span class="o">=</span> <span class="n">LinearRegression</span><span class="p">(</span><span class="n">normalize</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
 <span class="n">Lin_regr</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">Xtr</span><span class="p">,</span> <span class="n">ytr</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -4398,8 +4472,8 @@ KIrqhv4fD3kst+0wYGwAAAAASUVORK5CYII=
 <div class="prompt input_prompt">In [25]:</div>
 <div class="inner_cell">
 <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="n">mse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="n">Lin_regr</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">Xte</span><span class="p">)</span> <span class="o">-</span> <span class="n">yte</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
-<span class="k">print</span> <span class="s2">"The MSE of Linear Regression is "</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">mse</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">mse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="n">Lin_regr</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">Xte</span><span class="p">)</span> <span class="o">-</span> <span class="n">yte</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+<span class="nb">print</span> <span class="s2">"The MSE of Linear Regression is "</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">mse</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -4430,8 +4504,8 @@ KIrqhv4fD3kst+0wYGwAAAAASUVORK5CYII=
 <div class="prompt input_prompt">In [44]:</div>
 <div class="inner_cell">
 <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="k">print</span><span class="p">(</span><span class="s2">"Computing regularization path using the coordinate descent lasso..."</span><span class="p">)</span>
-<span class="n">Lasso_cv</span> <span class="o">=</span> <span class="n">LassoCV</span><span class="p">(</span><span class="n">cv</span> <span class="o">=</span> <span class="mi">20</span><span class="p">,</span> <span class="n">max_iter</span> <span class="o">=</span> <span class="mi">2000</span><span class="p">,</span> <span class="n">normalize</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">Xtr</span><span class="p">,</span> <span class="n">ytr</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">"Computing regularization path using the coordinate descent lasso..."</span><span class="p">)</span>
+<span class="n">Lasso_cv</span> <span class="o">=</span> <span class="n">LassoCV</span><span class="p">(</span><span class="n">cv</span> <span class="o">=</span> <span class="mi">20</span><span class="p">,</span> <span class="n">max_iter</span> <span class="o">=</span> <span class="mi">2000</span><span class="p">,</span> <span class="n">normalize</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">Xtr</span><span class="p">,</span> <span class="n">ytr</span><span class="p">)</span>
 
 <span class="c1"># Display results</span>
 <span class="n">m_log_alphas</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">Lasso_cv</span><span class="o">.</span><span class="n">alphas_</span><span class="p">)</span>
@@ -4450,7 +4524,7 @@ KIrqhv4fD3kst+0wYGwAAAAASUVORK5CYII=
 <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">'Mean square error on each fold: coordinate descent'</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s1">'tight'</span><span class="p">)</span>
 
-<span class="k">print</span> <span class="s2">"alpha chosen by cross-validation is "</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">Lasso_cv</span><span class="o">.</span><span class="n">alpha_</span><span class="p">)</span>
+<span class="nb">print</span> <span class="s2">"alpha chosen by cross-validation is "</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">Lasso_cv</span><span class="o">.</span><span class="n">alpha_</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -5582,11 +5656,11 @@ QCAQCKYwQtELBAKBQDCF+b/G/b9DIJUufwAAAABJRU5ErkJggg==
 <div class="prompt input_prompt">In [45]:</div>
 <div class="inner_cell">
 <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="n">las_regr</span> <span class="o">=</span> <span class="n">Lasso</span><span class="p">(</span><span class="n">alpha</span> <span class="o">=</span> <span class="n">Lasso_cv</span><span class="o">.</span><span class="n">alpha_</span><span class="p">,</span> <span class="n">normalize</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">las_regr</span> <span class="o">=</span> <span class="n">Lasso</span><span class="p">(</span><span class="n">alpha</span> <span class="o">=</span> <span class="n">Lasso_cv</span><span class="o">.</span><span class="n">alpha_</span><span class="p">,</span> <span class="n">normalize</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
 <span class="n">las_regr</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">Xtr</span><span class="p">,</span> <span class="n">ytr</span><span class="p">)</span>
 
 <span class="n">mse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="n">las_regr</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">Xte</span><span class="p">)</span> <span class="o">-</span> <span class="n">yte</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
-<span class="k">print</span> <span class="s2">"The MSE of Lasso Regression is "</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">mse</span><span class="p">)</span>
+<span class="nb">print</span> <span class="s2">"The MSE of Lasso Regression is "</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">mse</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -5617,8 +5691,8 @@ QCAQCKYwQtELBAKBQDCF+b/G/b9DIJUufwAAAABJRU5ErkJggg==
 <div class="prompt input_prompt">In [93]:</div>
 <div class="inner_cell">
 <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="n">Ridge_cv</span> <span class="o">=</span> <span class="n">RidgeCV</span><span class="p">(</span><span class="n">alphas</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.001</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">),</span> <span class="n">normalize</span> <span class="o">=</span> <span class="bp">True</span><span class="p">,</span> <span class="n">store_cv_values</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">Xtr</span><span class="p">,</span> <span class="n">ytr</span><span class="p">)</span>
-<span class="k">print</span> <span class="s2">"alpha chosen by cross-validation is "</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">Ridge_cv</span><span class="o">.</span><span class="n">alpha_</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">Ridge_cv</span> <span class="o">=</span> <span class="n">RidgeCV</span><span class="p">(</span><span class="n">alphas</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.001</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">),</span> <span class="n">normalize</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">store_cv_values</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">Xtr</span><span class="p">,</span> <span class="n">ytr</span><span class="p">)</span>
+<span class="nb">print</span> <span class="s2">"alpha chosen by cross-validation is "</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">Ridge_cv</span><span class="o">.</span><span class="n">alpha_</span><span class="p">)</span>
 
 <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">alphas_</span><span class="p">)),</span> <span class="n">Ridge_cv</span><span class="o">.</span><span class="n">cv_values_</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span> <span class="o">=</span> <span class="mi">0</span><span class="p">))</span>
@@ -5997,10 +6071,10 @@ xKHAQERERBwKDERERMShwEBEREQcCgxERETE8f9UCw9IhBg9fQAAAABJRU5ErkJggg==
 <div class="prompt input_prompt">In [94]:</div>
 <div class="inner_cell">
 <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="n">ridge_regr</span> <span class="o">=</span> <span class="n">Ridge</span><span class="p">(</span><span class="n">alpha</span> <span class="o">=</span> <span class="n">Ridge_cv</span><span class="o">.</span><span class="n">alpha_</span><span class="p">,</span> <span class="n">normalize</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">Xtr</span><span class="p">,</span> <span class="n">ytr</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">ridge_regr</span> <span class="o">=</span> <span class="n">Ridge</span><span class="p">(</span><span class="n">alpha</span> <span class="o">=</span> <span class="n">Ridge_cv</span><span class="o">.</span><span class="n">alpha_</span><span class="p">,</span> <span class="n">normalize</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">Xtr</span><span class="p">,</span> <span class="n">ytr</span><span class="p">)</span>
 
 <span class="n">mse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="n">ridge_regr</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">Xte</span><span class="p">)</span> <span class="o">-</span> <span class="n">yte</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
-<span class="k">print</span> <span class="s2">"The MSE of Linear Regression is "</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">mse</span><span class="p">)</span>
+<span class="nb">print</span> <span class="s2">"The MSE of Linear Regression is "</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">mse</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -6031,7 +6105,7 @@ xKHAQERERBwKDERERMShwEBEREQcCgxERETE8f9UCw9IhBg9fQAAAABJRU5ErkJggg==
 <div class="prompt input_prompt">In [12]:</div>
 <div class="inner_cell">
 <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="n">Lin_SVR</span>  <span class="o">=</span> <span class="n">LinearSVR</span><span class="p">(</span><span class="n">loss</span> <span class="o">=</span> <span class="s1">'squared_epsilon_insensitive'</span><span class="p">,</span> <span class="n">dual</span> <span class="o">=</span> <span class="bp">False</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">Lin_SVR</span>  <span class="o">=</span> <span class="n">LinearSVR</span><span class="p">(</span><span class="n">loss</span> <span class="o">=</span> <span class="s1">'squared_epsilon_insensitive'</span><span class="p">,</span> <span class="n">dual</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
 <span class="n">grid</span> <span class="o">=</span> <span class="n">GridSearchCV</span><span class="p">(</span><span class="n">Lin_SVR</span><span class="p">,</span><span class="n">param_grid</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">C</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">6</span><span class="p">)),</span> <span class="n">cv</span> <span class="o">=</span> <span class="n">KFold</span><span class="p">(</span><span class="n">n_splits</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span> <span class="n">random_state</span> <span class="o">=</span> <span class="mi">5</span><span class="p">),</span> <span class="n">n_jobs</span> <span class="o">=</span> <span class="mi">55</span><span class="p">)</span>
 <span class="n">grid</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">Xtr</span><span class="p">,</span><span class="n">ytr</span><span class="p">)</span>
 </pre></div>
@@ -6053,9 +6127,9 @@ xKHAQERERBwKDERERMShwEBEREQcCgxERETE8f9UCw9IhBg9fQAAAABJRU5ErkJggg==
 <div class="prompt input_prompt">In [14]:</div>
 <div class="inner_cell">
 <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="n">Lin_SVR</span>  <span class="o">=</span> <span class="n">LinearSVR</span><span class="p">(</span><span class="n">C</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span> <span class="n">loss</span> <span class="o">=</span> <span class="s1">'squared_epsilon_insensitive'</span><span class="p">,</span> <span class="n">dual</span> <span class="o">=</span> <span class="bp">False</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">Xtr</span><span class="p">,</span> <span class="n">ytr</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">Lin_SVR</span>  <span class="o">=</span> <span class="n">LinearSVR</span><span class="p">(</span><span class="n">C</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span> <span class="n">loss</span> <span class="o">=</span> <span class="s1">'squared_epsilon_insensitive'</span><span class="p">,</span> <span class="n">dual</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">Xtr</span><span class="p">,</span> <span class="n">ytr</span><span class="p">)</span>
 <span class="n">mse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="n">Lin_SVR</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">Xte</span><span class="p">)</span> <span class="o">-</span> <span class="n">yte</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
-<span class="k">print</span> <span class="s2">"The MSE of Linear SVM Regression is "</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">mse</span><span class="p">)</span>
+<span class="nb">print</span> <span class="s2">"The MSE of Linear SVM Regression is "</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">mse</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -6086,16 +6160,16 @@ xKHAQERERBwKDERERMShwEBEREQcCgxERETE8f9UCw9IhBg9fQAAAABJRU5ErkJggg==
 <div class="prompt input_prompt">In [ ]:</div>
 <div class="inner_cell">
 <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="c1">## tune the random forest parameters. Runned in server</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1">## tune the random forest parameters. Runned in server</span>
 <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
 <span class="n">rfr_model</span> <span class="o">=</span> <span class="n">RFR</span><span class="p">()</span>
-<span class="n">cross_validation</span> <span class="o">=</span> <span class="n">StratifiedKFold</span><span class="p">(</span><span class="n">n_splits</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span> <span class="n">shuffle</span> <span class="o">=</span> <span class="bp">False</span><span class="p">,</span> <span class="n">random_state</span> <span class="o">=</span> <span class="bp">None</span><span class="p">)</span>
+<span class="n">cross_validation</span> <span class="o">=</span> <span class="n">StratifiedKFold</span><span class="p">(</span><span class="n">n_splits</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span> <span class="n">shuffle</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">random_state</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
 <span class="n">parameter_grid</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"n_estimators"</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> <span class="s2">"max_depth"</span><span class="p">:</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">10</span><span class="p">)}</span>
 <span class="n">grid_search</span> <span class="o">=</span> <span class="n">GridSearchCV</span><span class="p">(</span><span class="n">rfr_model</span><span class="p">,</span> <span class="n">param_grid</span><span class="o">=</span><span class="n">parameter_grid</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="n">cross_validation</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
 <span class="n">grid_search</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">Xtr</span><span class="p">,</span> <span class="n">ytr</span><span class="p">)</span>
-<span class="k">print</span> <span class="n">grid_search</span><span class="o">.</span><span class="n">best_score_</span>
-<span class="k">print</span> <span class="n">grid_search</span><span class="o">.</span><span class="n">best_params_</span>
-<span class="k">print</span> <span class="s2">"The time used"</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span>
+<span class="nb">print</span> <span class="n">grid_search</span><span class="o">.</span><span class="n">best_score_</span>
+<span class="nb">print</span> <span class="n">grid_search</span><span class="o">.</span><span class="n">best_params_</span>
+<span class="nb">print</span> <span class="s2">"The time used"</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span>
 
 
 <span class="c1">#-0.0134198274734</span>
@@ -6120,7 +6194,7 @@ xKHAQERERBwKDERERMShwEBEREQcCgxERETE8f9UCw9IhBg9fQAAAABJRU5ErkJggg==
 <div class="prompt input_prompt">In [16]:</div>
 <div class="inner_cell">
 <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="n">rfr</span> <span class="o">=</span> <span class="n">RFR</span><span class="p">(</span><span class="n">n_estimators</span> <span class="o">=</span> <span class="mi">90</span><span class="p">,</span> <span class="n">max_depth</span> <span class="o">=</span> <span class="mi">5</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">rfr</span> <span class="o">=</span> <span class="n">RFR</span><span class="p">(</span><span class="n">n_estimators</span> <span class="o">=</span> <span class="mi">90</span><span class="p">,</span> <span class="n">max_depth</span> <span class="o">=</span> <span class="mi">5</span><span class="p">)</span>
 <span class="n">rfr</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">Xtr</span><span class="p">,</span> <span class="n">ytr</span><span class="p">)</span>
 <span class="n">rfrpred</span> <span class="o">=</span> <span class="n">rfr</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">Xte</span><span class="p">)</span>
 <span class="n">mserfr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="n">yte</span> <span class="o">-</span> <span class="n">rfrpred</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
@@ -6146,8 +6220,8 @@ xKHAQERERBwKDERERMShwEBEREQcCgxERETE8f9UCw9IhBg9fQAAAABJRU5ErkJggg==
 <div class="prompt input_prompt">In [17]:</div>
 <div class="inner_cell">
 <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="c1">#Get the feature_importances_</span>
-<span class="n">fea_import</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">rfr</span><span class="o">.</span><span class="n">feature_importances_</span><span class="p">,</span> <span class="n">index</span> <span class="o">=</span> <span class="n">Xtr</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span> <span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"Feature_Importance"</span><span class="p">])</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">by</span> <span class="o">=</span> <span class="s2">"Feature_Importance"</span><span class="p">,</span> <span class="n">ascending</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1">#Get the feature_importances_</span>
+<span class="n">fea_import</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">rfr</span><span class="o">.</span><span class="n">feature_importances_</span><span class="p">,</span> <span class="n">index</span> <span class="o">=</span> <span class="n">Xtr</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span> <span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"Feature_Importance"</span><span class="p">])</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">by</span> <span class="o">=</span> <span class="s2">"Feature_Importance"</span><span class="p">,</span> <span class="n">ascending</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
 <span class="n">fea_import</span><span class="o">.</span><span class="n">tail</span><span class="p">(</span><span class="mi">30</span><span class="p">)</span>
 <span class="c1">#plot the feature importance</span>
 <span class="n">ax</span> <span class="o">=</span> <span class="n">fea_import</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="o">-</span><span class="mi">50</span><span class="p">:,</span> <span class="p">:]</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">barh</span><span class="p">(</span><span class="n">figsize</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">15</span><span class="p">),</span><span class="n">fontsize</span> <span class="o">=</span> <span class="mi">15</span><span class="p">)</span>
@@ -8111,14 +8185,14 @@ hBBCCFFJJPkWQgghhBCikkjyLYQQQgghRCX5f5QMDrABo036AAAAAElFTkSuQmCC
 <div class="prompt input_prompt">In [27]:</div>
 <div class="inner_cell">
 <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="c1">#Fit Ridge regression using selected variables.</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1">#Fit Ridge regression using selected variables.</span>
 <span class="n">topvar</span> <span class="o">=</span> <span class="n">fea_import</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="o">-</span><span class="mi">35</span><span class="p">:]</span>
 <span class="n">Xtrtop</span> <span class="o">=</span> <span class="n">Xtr</span><span class="p">[</span><span class="n">topvar</span><span class="p">]</span>
 <span class="n">Xtetop</span> <span class="o">=</span> <span class="n">Xte</span><span class="p">[</span><span class="n">topvar</span><span class="p">]</span>
 
 <span class="n">alphas</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="o">-</span><span class="mi">6</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">11</span><span class="p">)</span>
 <span class="c1">#alphas = np.arange(20, 500, 10)</span>
-<span class="n">rcv</span> <span class="o">=</span> <span class="n">RidgeCV</span><span class="p">(</span><span class="n">alphas</span> <span class="o">=</span> <span class="n">alphas</span><span class="p">,</span> <span class="n">store_cv_values</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span><span class="n">normalize</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<span class="n">rcv</span> <span class="o">=</span> <span class="n">RidgeCV</span><span class="p">(</span><span class="n">alphas</span> <span class="o">=</span> <span class="n">alphas</span><span class="p">,</span> <span class="n">store_cv_values</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">normalize</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="n">rcv</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">Xtrtop</span><span class="p">,</span><span class="n">ytr</span><span class="p">)</span>
 <span class="n">cv_vals</span> <span class="o">=</span> <span class="n">rcv</span><span class="o">.</span><span class="n">cv_values_</span>
 <span class="n">LOOr</span> <span class="o">=</span> <span class="n">cv_vals</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
@@ -8132,7 +8206,7 @@ hBBCCFFJJPkWQgghhBCikkjyLYQQQgghRCX5f5QMDrABo036AAAAAElFTkSuQmCC
 <div class="prompt input_prompt">In [28]:</div>
 <div class="inner_cell">
 <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">alphas</span><span class="p">,</span><span class="n">LOOr</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">'lambda'</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">'Risk'</span><span class="p">)</span>
@@ -8724,7 +8798,7 @@ IrJ5DDRERERk8xhoiIiIyOb9P15n+Q0cbY1oAAAAAElFTkSuQmCC
 <div class="prompt input_prompt">In [20]:</div>
 <div class="inner_cell">
 <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="nb">min</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">alphas</span><span class="p">,</span><span class="n">LOOr</span><span class="p">))</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="nb">min</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">alphas</span><span class="p">,</span><span class="n">LOOr</span><span class="p">))</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>
@@ -8745,7 +8819,7 @@ IrJ5DDRERERk8xhoiIiIyOb9P15n+Q0cbY1oAAAAAElFTkSuQmCC
 <div class="prompt input_prompt">In [21]:</div>
 <div class="inner_cell">
 <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="n">rcv_m</span> <span class="o">=</span> <span class="n">Ridge</span><span class="p">(</span><span class="n">alpha</span> <span class="o">=</span> <span class="mi">100</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">rcv_m</span> <span class="o">=</span> <span class="n">Ridge</span><span class="p">(</span><span class="n">alpha</span> <span class="o">=</span> <span class="mi">100</span><span class="p">)</span>
 <span class="n">rcv_m</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">Xtrtop</span><span class="p">,</span> <span class="n">ytr</span><span class="p">)</span>
 <span class="n">yrcv</span> <span class="o">=</span> <span class="n">rcv_m</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">Xtetop</span><span class="p">)</span>
 <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="n">yte</span> <span class="o">-</span> <span class="n">yrcv</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
@@ -8779,18 +8853,18 @@ IrJ5DDRERERk8xhoiIiIyOb9P15n+Q0cbY1oAAAAAElFTkSuQmCC
 <div class="prompt input_prompt">In [ ]:</div>
 <div class="inner_cell">
 <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="c1">## tune the adaboost parameters</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1">## tune the adaboost parameters</span>
 <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
 <span class="n">adr_model</span> <span class="o">=</span> <span class="n">Adr</span><span class="p">()</span>
-<span class="n">cross_validation</span> <span class="o">=</span> <span class="n">StratifiedKFold</span><span class="p">(</span><span class="n">n_splits</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span> <span class="n">shuffle</span> <span class="o">=</span> <span class="bp">False</span><span class="p">,</span> <span class="n">random_state</span> <span class="o">=</span> <span class="bp">None</span><span class="p">)</span>
+<span class="n">cross_validation</span> <span class="o">=</span> <span class="n">StratifiedKFold</span><span class="p">(</span><span class="n">n_splits</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span> <span class="n">shuffle</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">random_state</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
 <span class="n">parameter_grid</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"n_estimators"</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> <span class="s2">"learning_rate"</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mf">0.2</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span> <span class="mi">20</span><span class="p">)}</span>
 
 <span class="n">grid_search</span> <span class="o">=</span> <span class="n">GridSearchCV</span><span class="p">(</span><span class="n">adr_model</span><span class="p">,</span> <span class="n">param_grid</span><span class="o">=</span><span class="n">parameter_grid</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="n">cross_validation</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
 <span class="n">grid_search</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">Xtr</span><span class="p">,</span> <span class="n">ytr</span><span class="p">)</span>
-<span class="k">print</span> <span class="n">grid_search</span><span class="o">.</span><span class="n">best_score_</span>
-<span class="k">print</span> <span class="n">grid_search</span><span class="o">.</span><span class="n">best_params_</span>
+<span class="nb">print</span> <span class="n">grid_search</span><span class="o">.</span><span class="n">best_score_</span>
+<span class="nb">print</span> <span class="n">grid_search</span><span class="o">.</span><span class="n">best_params_</span>
 <span class="n">t1</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-<span class="k">print</span> <span class="n">t1</span><span class="o">-</span><span class="n">t0</span>
+<span class="nb">print</span> <span class="n">t1</span><span class="o">-</span><span class="n">t0</span>
 
 <span class="c1">#-0.0206233166963</span>
 <span class="c1">#{'n_estimators': 10, 'learning_rate': 0.20000000000000001}</span>
@@ -8804,7 +8878,7 @@ IrJ5DDRERERk8xhoiIiIyOb9P15n+Q0cbY1oAAAAAElFTkSuQmCC
 <div class="prompt input_prompt">In [22]:</div>
 <div class="inner_cell">
 <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="n">adr</span> <span class="o">=</span> <span class="n">Adr</span><span class="p">(</span><span class="n">n_estimators</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="n">learning_rate</span> <span class="o">=</span> <span class="mf">0.2</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">adr</span> <span class="o">=</span> <span class="n">Adr</span><span class="p">(</span><span class="n">n_estimators</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="n">learning_rate</span> <span class="o">=</span> <span class="mf">0.2</span><span class="p">)</span>
 <span class="n">adr</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
 <span class="n">adrpred</span> <span class="o">=</span> <span class="n">adr</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">Xte</span><span class="p">)</span>
 <span class="n">mseadr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="n">yte</span> <span class="o">-</span> <span class="n">adrpred</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
@@ -8839,7 +8913,7 @@ IrJ5DDRERERk8xhoiIiIyOb9P15n+Q0cbY1oAAAAAElFTkSuQmCC
 <div class="prompt input_prompt">In [24]:</div>
 <div class="inner_cell">
 <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="c1">#use xgboost, note that xgboost only can handle DMatrix for Xtr</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1">#use xgboost, note that xgboost only can handle DMatrix for Xtr</span>
 <span class="n">Xtrmat</span> <span class="o">=</span> <span class="n">Xtr</span><span class="o">.</span><span class="n">as_matrix</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -8851,16 +8925,16 @@ IrJ5DDRERERk8xhoiIiIyOb9P15n+Q0cbY1oAAAAAElFTkSuQmCC
 <div class="prompt input_prompt">In [ ]:</div>
 <div class="inner_cell">
 <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
 <span class="n">xgb_model</span> <span class="o">=</span> <span class="n">xgb</span><span class="o">.</span><span class="n">XGBRegressor</span><span class="p">()</span>
-<span class="n">cross_validation</span> <span class="o">=</span> <span class="n">StratifiedKFold</span><span class="p">(</span><span class="n">n_splits</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+<span class="n">cross_validation</span> <span class="o">=</span> <span class="n">StratifiedKFold</span><span class="p">(</span><span class="n">n_splits</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 <span class="n">parameter_grid</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'max_depth'</span><span class="p">:</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">10</span><span class="p">),</span> <span class="s1">'n_estimators'</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span><span class="mi">10</span><span class="p">)}</span>
 <span class="n">xgbgrid</span> <span class="o">=</span> <span class="n">GridSearchCV</span><span class="p">(</span><span class="n">xgb_model</span><span class="p">,</span> <span class="n">param_grid</span><span class="o">=</span><span class="n">parameter_grid</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="n">cross_validation</span><span class="p">,</span> <span class="n">n_jobs</span> <span class="o">=</span> <span class="mi">4</span><span class="p">)</span> 
 <span class="n">xgbgrid</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">Xtrmat</span><span class="p">,</span><span class="n">ytr</span><span class="p">)</span>
-<span class="k">print</span> <span class="n">xgbgrid</span><span class="o">.</span><span class="n">best_score_</span>
-<span class="k">print</span> <span class="n">xgbgrid</span><span class="o">.</span><span class="n">best_params_</span>
+<span class="nb">print</span> <span class="n">xgbgrid</span><span class="o">.</span><span class="n">best_score_</span>
+<span class="nb">print</span> <span class="n">xgbgrid</span><span class="o">.</span><span class="n">best_params_</span>
 <span class="n">t1</span><span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-<span class="k">print</span> <span class="n">t1</span><span class="o">-</span><span class="n">t0</span>
+<span class="nb">print</span> <span class="n">t1</span><span class="o">-</span><span class="n">t0</span>
 
 <span class="c1">##-0.0326175522931</span>
 <span class="c1">#{'n_estimators': 60, 'max_depth': 5}</span>
@@ -8875,7 +8949,7 @@ IrJ5DDRERERk8xhoiIiIyOb9P15n+Q0cbY1oAAAAAElFTkSuQmCC
 <div class="prompt input_prompt">In [25]:</div>
 <div class="inner_cell">
 <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="n">xgbm</span> <span class="o">=</span> <span class="n">xgb</span><span class="o">.</span><span class="n">XGBRegressor</span><span class="p">(</span><span class="n">max_depth</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span> <span class="n">n_estimators</span> <span class="o">=</span> <span class="mi">60</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">xgbm</span> <span class="o">=</span> <span class="n">xgb</span><span class="o">.</span><span class="n">XGBRegressor</span><span class="p">(</span><span class="n">max_depth</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span> <span class="n">n_estimators</span> <span class="o">=</span> <span class="mi">60</span><span class="p">)</span>
 <span class="n">xgbm</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">Xtrmat</span><span class="p">,</span> <span class="n">ytr</span><span class="p">)</span>
 <span class="n">xgbpred</span> <span class="o">=</span> <span class="n">xgbm</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">Xte</span><span class="o">.</span><span class="n">as_matrix</span><span class="p">())</span>
 <span class="n">msexgb</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="n">yte</span> <span class="o">-</span> <span class="n">xgbpred</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
@@ -8970,7 +9044,7 @@ IrJ5DDRERERk8xhoiIiIyOb9P15n+Q0cbY1oAAAAAElFTkSuQmCC
 <div class="prompt input_prompt">In [ ]:</div>
 <div class="inner_cell">
 <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span> 
+<div class=" highlight hl-ipython3"><pre><span></span> 
 </pre></div>
 </div>
 </div>
