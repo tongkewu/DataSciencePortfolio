@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>Data Storyteller</title><link href="/" rel="alternate"></link><link href="/feeds/posts.atom.xml" rel="self"></link><id>/</id><updated>2018-06-26T16:40:00-07:00</updated><entry><title>Test Post</title><link href="/test-post.html" rel="alternate"></link><published>2018-06-26T16:40:00-07:00</published><updated>2018-06-26T16:40:00-07:00</updated><author><name>Rachel Wu</name></author><id>tag:,2018-06-26:test-post.html</id><summary type="html">&lt;style type="text/css"&gt;/*!
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Data Storyteller</title><link href="/" rel="alternate"></link><link href="/feeds/posts.atom.xml" rel="self"></link><id>/</id><updated>2018-06-26T16:40:00-07:00</updated><entry><title>Performance Analysis by ANOVA</title><link href="/performance-analysis-anova.html" rel="alternate"></link><published>2018-06-26T16:40:00-07:00</published><updated>2018-06-26T16:40:00-07:00</updated><author><name>Rachel Wu</name></author><id>tag:,2018-06-26:performance-analysis-anova.html</id><summary type="html">&lt;style type="text/css"&gt;/*!
 *
 * IPython notebook
 *
@@ -1717,7 +1717,7 @@ uCVJkqQW/QKktoRP/d75VQAAAABJRU5ErkJggg==
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
 &lt;/script&gt;
-</summary><category term="try"></category></entry><entry><title>Predict Zestimate By Advanced Regression Methods</title><link href="/zestimate.html" rel="alternate"></link><published>2017-06-11T18:00:00-07:00</published><updated>2017-06-11T18:00:00-07:00</updated><author><name>Rachel Wu</name></author><id>tag:,2017-06-11:zestimate.html</id><summary type="html">&lt;style type="text/css"&gt;/*!
+</summary><category term="ANOVA"></category></entry><entry><title>Predict Zestimate By Advanced Regression Methods</title><link href="/zestimate.html" rel="alternate"></link><published>2017-06-11T18:00:00-07:00</published><updated>2017-06-11T18:00:00-07:00</updated><author><name>Rachel Wu</name></author><id>tag:,2017-06-11:zestimate.html</id><summary type="html">&lt;style type="text/css"&gt;/*!
 *
 * IPython notebook
 *
